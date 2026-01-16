@@ -1,18 +1,19 @@
 const router = require("express").Router();
 const mongoose = require("mongoose");
 const Task = require("../models/Task");
+const auth = require("../middleware/auth");
 
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
-    const tasks = await Task.find().sort({ createdAt: -1 });
+    const tasks = await Task.find({ userId: req.user }).sort({ createdAt: -1 });
     res.json(tasks);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-router.post("/", async (req, res) => {
-  const task = new Task(req.body);
+router.post("/", auth, async (req, res) => {
+  const task = new Task({...req.body, userId: req.user});
   await task.save();
   res.status(201).json(task);
 });
