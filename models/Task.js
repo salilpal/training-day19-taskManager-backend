@@ -8,6 +8,7 @@ const taskSchema = new mongoose.Schema({
     enum: ["Work", "Personal", "Urgent"],
     default: "Personal",
   },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   createdAt: { type: Date, default: Date.now },
 });
 

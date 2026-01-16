@@ -8,6 +8,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 router.post("/signup", async (req, res) => {
   try {
     const { username, password } = req.body;
+
+    // Check if user already exists (prevents 500 duplicate key error)
+    const existingUser = await User.findOne({ username });
+    if (existingUser)
+      return res.status(400).json({ msg: "User already exists" });
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -17,11 +23,11 @@ router.post("/signup", async (req, res) => {
     });
 
     await newUser.save();
-    res.status(201).json({
+    return res.status(201).json({
       msg: "User created",
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       error: err.message,
     });
   }
@@ -30,15 +36,19 @@ router.post("/signup", async (req, res) => {
 router.post("/signin", async (req, res) => {
   try {
     const { username, password } = req.body;
-    const user = User.findOne({ username });
+    const user = await User.findOne({ username });
+
     if (!user) return res.status(401).json({ msg: "user does not exist" });
+
     const compare = await bcrypt.compare(password, user.password);
     if (!compare) return res.status(401).json({ msg: "invalid credentials" });
 
-    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "1h" });
-    res.json({ token, username: user.username });
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
+    return res.json({ token, username: user.username });
   } catch (err) {
-    res.json(500).json({ error: err.message });
+    if (!res.headersSent) {
+      return res.status(500).json({ error: err.message });
+    }
   }
 });
 

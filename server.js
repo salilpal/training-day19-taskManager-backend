@@ -10,13 +10,13 @@ const mongodbURI = process.env.mongodbURI;
 
 const app = express();
 
-const corsOptions = {
-  origin: "https://salilpal.github.io",
-  optionsSuccessStatus: 200,
-};
+// const corsOptions = {
+//   origin: "https://salilpal.github.io",
+//   optionsSuccessStatus: 200,
+// };
 
 app.use(express.json());
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.use("/tasks", taskRoutes);
 app.use("/auth", authRoutes);
